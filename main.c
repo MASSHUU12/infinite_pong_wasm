@@ -1,4 +1,6 @@
-int add(int a, int b)
+extern int set_canvas_size(int width, int height);
+
+int main(void)
 {
-  return a + b;
+  set_canvas_size(800, 600);
 }

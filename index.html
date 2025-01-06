@@ -1,17 +1,8 @@
 <!doctype html>
 <html>
-    <head> </head>
+    <head></head>
     <body>
-        <script type="module">
-            async function init() {
-                const { instance } = await WebAssembly.instantiateStreaming(
-                    fetch("./main.wasm"),
-                );
-
-                console.log(instance);
-                console.log(instance.exports.add(5, 8));
-            }
-            init();
-        </script>
+        <canvas id="game"></canvas>
+        <script type="module" src="main.mjs"></script>
     </body>
 </html>
