@@ -34,6 +34,15 @@ async function init() {
           ctx.fillStyle = parseColor(colorValue);
           ctx.fillRect(x, y, w, h);
         },
+        fill_circle: function (x, y, radius, color) {
+          const memory = instance.exports.memory;
+          const colorValue = new Uint32Array(memory.buffer, color, 1)[0];
+
+          ctx.fillStyle = parseColor(colorValue);
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, 2 * Math.PI);
+          ctx.fill();
+        },
         set_update_frame: function (fIndex) {
           updateFrameIndex = fIndex;
         },
