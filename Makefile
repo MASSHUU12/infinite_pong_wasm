@@ -8,3 +8,7 @@ wat: main.wasm
 
 serve: main.wasm
 	python3 -m http.server
+
+clean:
+	rm *.wasm
+	rm *.wat
