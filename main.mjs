@@ -46,6 +46,12 @@ async function init() {
         set_update_frame: function (fIndex) {
           updateFrameIndex = fIndex;
         },
+        cos: function (x) {
+          return Math.cos(x);
+        },
+        sin: function (x) {
+          return Math.sin(x);
+        },
       },
     },
   );

@@ -10,7 +10,6 @@ void *memset(void *dest, int val, size_t len) {
 }
 
 #define PI 3.14159265358979323846
-#define TERMS 10
 
 #define BOARD_HEIGHT 32
 #define BOARD_WIDTH BOARD_HEIGHT * 2
@@ -22,39 +21,6 @@ void *memset(void *dest, int val, size_t len) {
 #define RECT_WIDTH 100
 #define RECT_HEIGHT 100
 
-float c_sin(float x) {
-  float result = 0.0f;
-  float term = x;    // Starts at x^(2*0 + 1)
-  float sign = 1.0f; // Tracks the alternating sign
-  int factorial = 1; // Starts at factorial(1)
-
-  for (int i = 0; i < TERMS; i++) {
-    result += sign * term / factorial;
-    sign = -sign;
-    term *= x * x;
-    factorial *= (2 * i + 2) * (2 * i + 3);
-  }
-  return result;
-}
-
-float c_cos(float x) {
-  float result = 0.0f;
-  float term = 1.0f; // Starts at x^(2*0)
-  float sign = 1.0f;
-  int factorial = 1; // Starts at factorial(0) which is 1
-
-  for (int i = 0; i < TERMS; i++) {
-    result += sign * term / factorial;
-    sign = -sign;
-    term *= x * x;
-    if (i == 0) {
-      factorial *= 1;
-    }
-    factorial *= (2 * i + 1) * (2 * i + 2);
-  }
-  return result;
-}
-
 typedef struct {
   uint8_t r;
   uint8_t g;
@@ -65,19 +31,19 @@ typedef struct {
 typedef struct {
   float x;
   float y;
-} vector2_t;
+} vec2_t;
 
-vector2_t multiply_vector2(vector2_t vector, float scalar) {
-  return (vector2_t){vector.x * scalar, vector.y * scalar};
+vec2_t multiply_vec2(vec2_t vector, float scalar) {
+  return (vec2_t){vector.x * scalar, vector.y * scalar};
 }
 
-vector2_t add_vector2(vector2_t vector1, vector2_t vector2) {
-  return (vector2_t){vector1.x + vector2.x, vector1.y + vector2.y};
+vec2_t add_vec2(vec2_t vector1, vec2_t vector2) {
+  return (vec2_t){vector1.x + vector2.x, vector1.y + vector2.y};
 }
 
 typedef struct {
-  vector2_t position;
-  vector2_t velocity;
+  vec2_t position;
+  vec2_t velocity;
 } player_state_t;
 
 typedef enum {
@@ -92,6 +58,8 @@ extern void clear_with_color(color_t color);
 extern void fill_rect(float x, float y, float w, float h, color_t color);
 extern void fill_circle(float x, float y, float radius, color_t color);
 extern void set_update_frame(func_ptr f);
+extern double cos(double x);
+extern double sin(double x);
 
 const color_t BACKGROUND_COLOR = {0x18, 0x18, 0x18, 0xFF};
 const color_t CELL_COLOR = {0, 0, 0, 0xFF};
@@ -117,20 +85,26 @@ color_t get_player_color(player_t player) {
   }
 }
 
-void update_frame(float delta) {
-  player1.position =
-      add_vector2(player1.position, multiply_vector2(player1.velocity, delta));
-  player2.position =
-      add_vector2(player2.position, multiply_vector2(player2.velocity, delta));
-
-  clear_with_color(BACKGROUND_COLOR);
-
+void draw_board() {
   for (int y = 0; y < BOARD_HEIGHT; ++y) {
     for (int x = 0; x < BOARD_WIDTH; ++x) {
       fill_rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE,
                 get_player_color(board[y][x]));
     }
   }
+}
+
+void calculate_player_position(const float delta) {
+  player1.position =
+      add_vec2(player1.position, multiply_vec2(player1.velocity, delta));
+  player2.position =
+      add_vec2(player2.position, multiply_vec2(player2.velocity, delta));
+}
+
+void update_frame(float delta) {
+  calculate_player_position(delta);
+  clear_with_color(BACKGROUND_COLOR);
+  draw_board();
 
   fill_circle(player1.position.x, player1.position.y, PLAYER_RADIUS,
               get_player_color(TWO));
@@ -142,11 +116,14 @@ int main(void) {
   set_canvas_size(SCREEN_WIDTH, SCREEN_HEIGHT);
   populate_board();
 
-  player1.position = (vector2_t){SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
-  player1.velocity = multiply_vector2(
-      (vector2_t){c_cos(PI * .25), c_sin(PI * .25)}, PLAYER_SPEED);
+  player1.position = (vec2_t){SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
+  player1.velocity =
+      multiply_vec2((vec2_t){cos(PI * .25), sin(PI * .25)}, PLAYER_SPEED);
+
   player2.position =
-      (vector2_t){SCREEN_WIDTH / 2.0 + SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
+      (vec2_t){SCREEN_WIDTH / 2.0 + SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
+  player2.velocity =
+      multiply_vec2((vec2_t){cos(PI * 1.25), sin(PI * 1.25)}, PLAYER_SPEED);
 
   set_update_frame(update_frame);
 }
