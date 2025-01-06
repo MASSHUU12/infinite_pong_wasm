@@ -9,6 +9,8 @@ function parseColor(color) {
   return "#" + r + g + b + a;
 }
 
+let updateFrameIndex = null;
+
 async function init() {
   const { instance } = await WebAssembly.instantiateStreaming(
     fetch("./main.wasm"),
@@ -32,12 +34,32 @@ async function init() {
           ctx.fillStyle = parseColor(colorValue);
           ctx.fillRect(x, y, w, h);
         },
+        set_update_frame: function (fIndex) {
+          updateFrameIndex = fIndex;
+        },
       },
     },
   );
 
-  console.log(instance);
-  console.log(ctx);
   instance.exports.main();
+
+  const table =
+    instance.exports.__indirect_function_table || instance.exports.table;
+  const updateFrame = table.get(updateFrameIndex);
+
+  let previousTimestamp;
+  function gameLoop(timestamp) {
+    const deltaTime = (timestamp - previousTimestamp) * 0.001;
+    previousTimestamp = timestamp;
+
+    updateFrame(deltaTime);
+    window.requestAnimationFrame(gameLoop);
+  }
+
+  window.requestAnimationFrame((timestamp) => {
+    previousTimestamp = timestamp;
+    window.requestAnimationFrame(gameLoop);
+  });
 }
+
 init();
