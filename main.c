@@ -13,9 +13,13 @@ void *memset(void *dest, int val, size_t len) {
 
 #define BOARD_HEIGHT 32
 #define BOARD_WIDTH (BOARD_HEIGHT * 2)
+#define BOARD_WIDTH2 (BOARD_WIDTH / 2)
 #define CELL_SIZE 20
 #define SCREEN_WIDTH (BOARD_WIDTH * CELL_SIZE)
+#define SCREEN_WIDTH2 (SCREEN_WIDTH / 2.f)
+#define SCREEN_WIDTH4 (SCREEN_WIDTH / 4.f)
 #define SCREEN_HEIGHT (BOARD_HEIGHT * CELL_SIZE)
+#define SCREEN_HEIGHT2 (SCREEN_HEIGHT / 2.f)
 #define PLAYER_RADIUS (SCREEN_HEIGHT * 0.05)
 #define PLAYER_SPEED 100
 #define RECT_WIDTH 100
@@ -63,22 +67,23 @@ extern double cos(double x);
 extern double sin(double x);
 
 const color_t BACKGROUND_COLOR = {0x18, 0x18, 0x18, 0xFF};
-const color_t CELL_COLOR = {0, 0, 0, 0xFF};
+const color_t BOARD_LEFT_COLOR = {0xAA, 0xFF, 0xAA, 0xFF};
+const color_t BOARD_RIGHT_COLOR = {0xFF, 0xAA, 0xAA, 0xFF};
 
 player_t board[BOARD_HEIGHT][BOARD_WIDTH];
 player_state_t player1, player2;
 
 void populate_board() {
-  for (int x = 0; x < BOARD_WIDTH / 2; ++x) {
+  for (int x = 0; x < BOARD_WIDTH2; ++x) {
     for (int y = 0; y < BOARD_HEIGHT; ++y) {
       board[y][x] = ONE;
-      board[y][x + BOARD_WIDTH / 2] = TWO;
+      board[y][x + BOARD_WIDTH2] = TWO;
     }
   }
 }
 
 color_t get_player_color(player_t player) {
-  return player == ONE ? player1.color : player2.color;
+  return player == ONE ? player2.color : player1.color;
 }
 
 void draw_board() {
@@ -97,31 +102,36 @@ void calculate_player_position(const float delta) {
       add_vec2(player2.position, multiply_vec2(player2.velocity, delta));
 }
 
-void update_frame(float delta) {
-  calculate_player_position(delta);
-  clear_with_color(BACKGROUND_COLOR);
-  draw_board();
-
+void draw_player() {
   fill_circle(player1.position.x, player1.position.y, PLAYER_RADIUS,
               player1.color);
   fill_circle(player2.position.x, player2.position.y, PLAYER_RADIUS,
               player2.color);
 }
 
+void update_frame(float delta) {
+  calculate_player_position(delta);
+  clear_with_color(BACKGROUND_COLOR);
+  draw_board();
+  draw_player();
+}
+
 int main(void) {
   set_canvas_size(SCREEN_WIDTH, SCREEN_HEIGHT);
   populate_board();
 
-  player1.position = (vec2_t){SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
-  player1.velocity =
-      multiply_vec2((vec2_t){cos(PI * .25), sin(PI * .25)}, PLAYER_SPEED);
-  player1.color = (color_t){0xFF, 0xAA, 0xAA, 0xFF};
-
-  player2.position =
-      (vec2_t){SCREEN_WIDTH / 2.0 + SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
-  player2.velocity =
-      multiply_vec2((vec2_t){cos(PI * 1.25), sin(PI * 1.25)}, PLAYER_SPEED);
-  player2.color = (color_t){0xAA, 0xFF, 0xAA, 0xFF};
+  player1 = (player_state_t){
+      .position = (vec2_t){SCREEN_WIDTH4, SCREEN_HEIGHT2},
+      .velocity =
+          multiply_vec2((vec2_t){cos(PI * .25), sin(PI * .25)}, PLAYER_SPEED),
+      .color = BOARD_LEFT_COLOR,
+  };
+  player2 = (player_state_t){
+      .position = (vec2_t){SCREEN_WIDTH2 + SCREEN_WIDTH4, SCREEN_HEIGHT2},
+      .velocity =
+          multiply_vec2((vec2_t){cos(PI * 1.25), sin(PI * 1.25)}, PLAYER_SPEED),
+      .color = BOARD_RIGHT_COLOR,
+  };
 
   set_update_frame(update_frame);
 }
