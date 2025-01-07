@@ -1,14 +1,22 @@
-default: wasm
+.PHONY: all build clean serve
 
-wasm: main.c
-	clang --target=wasm32 -O3 -flto -nostdlib -fno-builtin-memset -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -Wl,-z,stack-size=8388608 -Wl,--allow-undefined -o main.wasm main.c
+CC = clang
+OUTPUT_FILE = main.wasm
+CFLAGS = --target=wasm32 -Oz -s -flto -nostdlib -fno-builtin-memset -Wall -Wextra
+LDFLAGS = -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -Wl,-z,stack-size=8388608 -Wl,--allow-undefined
 
-wat: main.wasm
-	wasm2wat main.wasm > main.wat
+all: build
 
-serve: main.wasm
+build: $(OUTPUT_FILE)
+
+$(OUTPUT_FILE): main.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+main.wat: $(OUTPUT_FILE)
+	wasm2wat $< > $@
+
+serve: $(OUTPUT_FILE)
 	python3 -m http.server
 
 clean:
-	rm *.wasm
-	rm *.wat
+	$(RM) *.wasm *.wat
