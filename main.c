@@ -12,11 +12,11 @@ void *memset(void *dest, int val, size_t len) {
 #define PI 3.14159265358979323846
 
 #define BOARD_HEIGHT 32
-#define BOARD_WIDTH BOARD_HEIGHT * 2
+#define BOARD_WIDTH (BOARD_HEIGHT * 2)
 #define CELL_SIZE 20
-#define SCREEN_WIDTH BOARD_WIDTH *CELL_SIZE
-#define SCREEN_HEIGHT BOARD_HEIGHT *CELL_SIZE
-#define PLAYER_RADIUS SCREEN_HEIGHT * 0.05
+#define SCREEN_WIDTH (BOARD_WIDTH * CELL_SIZE)
+#define SCREEN_HEIGHT (BOARD_HEIGHT * CELL_SIZE)
+#define PLAYER_RADIUS (SCREEN_HEIGHT * 0.05)
 #define PLAYER_SPEED 100
 #define RECT_WIDTH 100
 #define RECT_HEIGHT 100
@@ -44,6 +44,7 @@ vec2_t add_vec2(vec2_t vector1, vec2_t vector2) {
 typedef struct {
   vec2_t position;
   vec2_t velocity;
+  color_t color;
 } player_state_t;
 
 typedef enum {
@@ -77,12 +78,7 @@ void populate_board() {
 }
 
 color_t get_player_color(player_t player) {
-  switch (player) {
-  case ONE:
-    return (color_t){0xFF, 0xAA, 0xAA, 0xFF};
-  case TWO:
-    return (color_t){0xAA, 0xFF, 0xAA, 0xFF};
-  }
+  return player == ONE ? player1.color : player2.color;
 }
 
 void draw_board() {
@@ -107,9 +103,9 @@ void update_frame(float delta) {
   draw_board();
 
   fill_circle(player1.position.x, player1.position.y, PLAYER_RADIUS,
-              get_player_color(TWO));
+              player1.color);
   fill_circle(player2.position.x, player2.position.y, PLAYER_RADIUS,
-              get_player_color(ONE));
+              player2.color);
 }
 
 int main(void) {
@@ -119,11 +115,13 @@ int main(void) {
   player1.position = (vec2_t){SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
   player1.velocity =
       multiply_vec2((vec2_t){cos(PI * .25), sin(PI * .25)}, PLAYER_SPEED);
+  player1.color = (color_t){0xFF, 0xAA, 0xAA, 0xFF};
 
   player2.position =
       (vec2_t){SCREEN_WIDTH / 2.0 + SCREEN_WIDTH / 4.0, SCREEN_HEIGHT / 2.0};
   player2.velocity =
       multiply_vec2((vec2_t){cos(PI * 1.25), sin(PI * 1.25)}, PLAYER_SPEED);
+  player2.color = (color_t){0xAA, 0xFF, 0xAA, 0xFF};
 
   set_update_frame(update_frame);
 }
