@@ -89,6 +89,11 @@ int player_eats_enemy_cell(float cx, float cy, player_t kind) {
   int tx = floor_f((cx + PLAYER_RADIUS) / CELL_SIZE);
   int ty = floor_f((cy + PLAYER_RADIUS) / CELL_SIZE);
 
+  if (bx < 0) bx = 0;
+  if (by < 0) by = 0;
+  if (tx >= BOARD_WIDTH) tx = BOARD_WIDTH - 1;
+  if (ty >= BOARD_HEIGHT) ty = BOARD_HEIGHT - 1;
+
   for (int x = bx; x < tx; ++x) {
     for (int y = by; y <= ty; ++y) {
       float l = x * CELL_SIZE;
